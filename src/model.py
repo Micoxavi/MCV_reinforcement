@@ -15,7 +15,7 @@ class DQN(nn.Module):
 
     Atributes
     ---------
-        input_shape: Input image's size
+        input_shape: Input image's shape
         nb_actions: number of action-value to output. Pong has 6 actions by default.
 
     Methods
