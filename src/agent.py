@@ -36,7 +36,7 @@ class DQNAgent:
         
     """
 
-    def __init__(self, input_shape: tuple, nb_actions: int, device: str, params: dict) -> None:
+    def __init__(self, input_shape: int, nb_actions: int, device: str, params: dict) -> None:
         """
         DQNAgent initialization
 
