@@ -3,7 +3,6 @@ This script contains a DQNAgent class
 """
 
 import torch
-from torch import nn
 from torch import optim
 from torch.nn import functional as F
 import numpy as np
@@ -15,6 +14,7 @@ class DQNAgent:
     """
     The DQNAgent agent class. Implements the Q-learning algorithm 
     for reinforcement learning tasks.
+    ...
 
     Atributes
     ---------
@@ -30,8 +30,7 @@ class DQNAgent:
 
     """
 
-    def __init__(self, input_shape: tuple, nb_actions: int, device: str, params: dict,
-                 env: any) -> None:
+    def __init__(self, input_shape: tuple, nb_actions: int, device: str, params: dict) -> None:
         """
         DQNAgent initialization
 
@@ -40,22 +39,20 @@ class DQNAgent:
             nb_actions: number of action-value to output. Pong has 6 actions by default.
             device: cuda when gpu available, cpu otherwise.
             params: Dictionary with the different hyperparameters configuration.
-            env: Game enviroment
 
         """
         self.device = device
         self.params = params
-        self.enviroment = env
 
         # @train_network -> Used for action selection during the agent's interaction with
         # the enviroment. Its parameters are updated based on the TD-error calculated during
         # training.
-        self.train_network = DQN(input_shape, nb_actions).to(self.device)
+        self.train_network = DQN(input_shape, nb_actions, params).to(self.device)
 
         # @target_network -> used for estimating the target Q-values during the training process
         # its parameters are are periodically updated by copying the parameters from the
         # train_network, helping to stabilize the training process.
-        self.target_network = DQN(input_shape, nb_actions).to(self.device)
+        self.target_network = DQN(input_shape, nb_actions, params).to(self.device)
         self.target_network.load_state_dict(self.train_network.state_dict())
 
         self.optimizer = optim.Adam(self.train_network.parameters(), lr=self.params['lr'])
@@ -71,7 +68,7 @@ class DQNAgent:
 
         """
         if np.random.rand() <= self.params['eps']:
-            action = self.enviroment.action_Space.sample()
+            action = self.params['env'].action_Space.sample()
 
         else:
             with torch.no_grad():
@@ -125,16 +122,17 @@ class DQNAgent:
 
         # Optimize the parameters with the loss
 
-        # Zero out the gradient to prevent errors from accumulation to previous values. 
-        self.optimizer.zero_grad()
-        loss.backward()
+        if self.params['optimize_memory_usage']:
+            # Zero out the gradient to prevent errors from accumulation to previous values.
+            self.optimizer.zero_grad()
+            loss.backward()
 
-        # Apply gradient clipping to avoid exploding gradients. 
-        # @clamp_ --> Operation done in-place modifying original gradient data.
-        for param in self.train_network.parameters():
-            param.grad.data.clamp_(-1, 1)
+            # Apply gradient clipping to avoid exploding gradients.
+            # @clamp_ --> Operation done in-place modifying original gradient data.
+            for param in self.train_network.parameters():
+                param.grad.data.clamp_(-1, 1)
 
-        self.optimizer.step()
+            self.optimizer.step()
 
         # return the loss to monitor it.
         return loss.detach().cpu().numpy()
