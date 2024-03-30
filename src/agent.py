@@ -83,7 +83,7 @@ class DQNAgent:
 
         return action
 
-    def train(self, replay_buffer, batch_size: int, discount):
+    def train(self, replay_buffer, batch_size: int, discount) -> float:
         """
         Agent training function. As every agent can be reused for different tasks, the training
         function is usually encapsulated within the agent itself for easier modularity.
@@ -139,3 +139,14 @@ class DQNAgent:
         # return the loss to monitor it.
         return loss.detach().cpu().numpy()
 
+    def update_target_network(self, nb_iterations, update_every):
+        """
+        Funtion to update the self.target_network fully with the train newtork params.
+
+        :Parameters:
+            nb_iterations:
+            update_every:
+        """
+        if nb_iterations % update_every == 0:
+            print("Updating target network parameters")
+            self.target_network.load_state_dict(self.train_network.state_dict())
