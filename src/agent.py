@@ -28,6 +28,12 @@ class DQNAgent:
     select_actions(state)
         Selects actions based on the epsilon-greedy method and the current state.
 
+    train(replay_buffer, batch_size, discount)
+        Agent training function.
+
+    update_target_network(nb_iterations, update_every)
+        Funtion to update the self.target_network fully with the train newtork params.
+        
     """
 
     def __init__(self, input_shape: tuple, nb_actions: int, device: str, params: dict) -> None:
@@ -80,15 +86,15 @@ class DQNAgent:
 
         return action
 
-    def train(self, replay_buffer, batch_size: int, discount) -> float:
+    def train(self, replay_buffer: object, batch_size: int, discount) -> float:
         """
         Agent training function. As every agent can be reused for different tasks, the training
         function is usually encapsulated within the agent itself for easier modularity.
 
         :Parameters:
             replay_buffer: Memory buffer with tuples (state, next_state, action, reward, done)
-            batch_size: 
-            discount:         
+            batch_size: size of the data sampling batch
+            discount: reward reduction parameter.         
         """
 
         state, next_state, action, reward, done = replay_buffer(batch_size)
@@ -137,13 +143,13 @@ class DQNAgent:
         # return the loss to monitor it.
         return loss.detach().cpu().numpy()
 
-    def update_target_network(self, nb_iterations, update_every):
+    def update_target_network(self, nb_iterations: int, update_every: int):
         """
         Funtion to update the self.target_network fully with the train newtork params.
 
         :Parameters:
             nb_iterations:
-            update_every:
+            update_every: number of optimization steps for the target network to be updated
         """
         if nb_iterations % update_every == 0:
             print("Updating target network parameters")
