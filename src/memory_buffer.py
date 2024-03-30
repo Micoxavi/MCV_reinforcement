@@ -74,7 +74,7 @@ class ReplyBuffer:
         state_list, next_list, action_list, reward_list, done_list = [], [], [], [], []
 
         for i in index:
-            state, next_state, action, reward, done = self.buffer[i] 
+            state, next_state, action, reward, done = self.buffer[i]
 
             state_list.append(np.array(state, copy=False))
             next_list.append(np.array(next_state, copy=False))

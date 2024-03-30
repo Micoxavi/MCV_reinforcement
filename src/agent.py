@@ -61,7 +61,7 @@ class DQNAgent:
         self.target_network = DQN(input_shape, nb_actions, params).to(self.device)
         self.target_network.load_state_dict(self.train_network.state_dict())
 
-        self.optimizer = optim.Adam(self.train_network.parameters(), lr=self.params['lr'])
+        self.optimizer = optim.Adam(self.train_network.parameters(), lr=self.params['learning_rate'])
 
     def select_actions(self, state: any) -> int:
         """
@@ -73,7 +73,7 @@ class DQNAgent:
             state: Actual bar position on the image.
 
         """
-        if np.random.rand() <= self.params['eps']:
+        if np.random.rand() <= self.params['epsilon_start']:
             action = self.params['env'].action_Space.sample()
 
         else:
@@ -128,17 +128,16 @@ class DQNAgent:
 
         # Optimize the parameters with the loss
 
-        if self.params['optimize_memory_usage']:
-            # Zero out the gradient to prevent errors from accumulation to previous values.
-            self.optimizer.zero_grad()
-            loss.backward()
+        # Zero out the gradient to prevent errors from accumulation to previous values.
+        self.optimizer.zero_grad()
+        loss.backward()
 
-            # Apply gradient clipping to avoid exploding gradients.
-            # @clamp_ --> Operation done in-place modifying original gradient data.
-            for param in self.train_network.parameters():
-                param.grad.data.clamp_(-1, 1)
+        # Apply gradient clipping to avoid exploding gradients.
+        # @clamp_ --> Operation done in-place modifying original gradient data.
+        for param in self.train_network.parameters():
+            param.grad.data.clamp_(-1, 1)
 
-            self.optimizer.step()
+        self.optimizer.step()
 
         # return the loss to monitor it.
         return loss.detach().cpu().numpy()

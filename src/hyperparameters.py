@@ -28,6 +28,7 @@ def get_hyperparams() -> dict:
         train_freq: int
         }
     """
+    env = AtariWrapper(gym.make('PongNoFrameskip-v4'))
 
     # @exploration_fraction --> the fraction of total timesteps over which the
                               # exploration rate is annealed from 1.0 to "exploration_final_eps".
@@ -37,7 +38,7 @@ def get_hyperparams() -> dict:
     params = {
 
         # Parameters given by default on the exercise training introduction
-        'env': AtariWrapper(gym.make('PongNoFrameskip-v4')),
+        'env': env,
         'batch_size': 32,
         'buffer_size': 100_000,
         'exploration_final_eps': 0.01, # epsilon min
@@ -54,6 +55,8 @@ def get_hyperparams() -> dict:
 
         # Other usefull parameters found on internet
         'discount': 0.99,
-        'hidden_size': 512
+        'hidden_size': 512,
+        'epsilon_start': 1.0,
+        'nb_actions': env.action_space.n
     }
     return params
