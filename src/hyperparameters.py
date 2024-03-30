@@ -3,6 +3,7 @@ Script which contain the hyperparameters for the Pong Enviroment
 """
 import gymnasium as gym
 from stable_baselines3.common.atari_wrappers import AtariWrapper
+from supersuit import frame_stack_v1
 
 
 def get_hyperparams() -> dict:
@@ -29,6 +30,7 @@ def get_hyperparams() -> dict:
         }
     """
     env = AtariWrapper(gym.make('PongNoFrameskip-v4'))
+    env = frame_stack_v1(env , 4)
 
     # @exploration_fraction --> the fraction of total timesteps over which the
                               # exploration rate is annealed from 1.0 to "exploration_final_eps".
@@ -48,8 +50,6 @@ def get_hyperparams() -> dict:
         'learning_rate': 0.000_1,
         'learning_starts': 100_000,
         'n_timesteps': 10_000_000.0,
-        'optimize_memory_usage': False,
-        'policy':  'CnnPolicy',
         'target_update_interval': 1000,
         'train_freq': 4,
 
