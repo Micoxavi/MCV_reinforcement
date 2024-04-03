@@ -53,7 +53,7 @@ class ReplyBuffer:
 
         """
 
-        if len(self.buffer) == len(self.max_size):
+        if len(self.buffer) == self.max_size:
             self.buffer[int(self.pointer)] = data
             self.pointer = (self.pointer + 1) % self.max_size
 
@@ -70,17 +70,31 @@ class ReplyBuffer:
         :Return:
             tuple with np.ndarray for each data element
         """
-        index = np.random.randint(0, len(self.buffer), size=batch_size)
+        index = np.random.randint(0, len(self.buffer) -1, size=batch_size)
         state_list, next_list, action_list, reward_list, done_list = [], [], [], [], []
 
         for i in index:
             state, next_state, action, reward, done = self.buffer[i]
+            # TODO: Why does the tensor convert into a tuple at some point?
 
-            state_list.append(np.array(state, copy=False))
+            if isinstance(state, tuple):
+                state = state[0]
+        
+            state_list.append(np.array(state, copy=False))  # lista con arrays
+            
+            # state_array = np.append(state_array, state)
             next_list.append(np.array(next_state, copy=False))
             action_list.append(np.array(action, copy=False))
             reward_list.append(np.array(reward, copy=False))
             done_list.append(np.array(done, copy=False))
 
-        return (np.array(state_list), np.array(next_list), np.array(action_list).reshape(-1,1),
-                np.array(reward_list).reshape(-1,1), np.array(done_list).reshape(-1,1))
+
+        # turn the lists into array
+        # state_array = [np.array(arr) for arr in state_list]
+        state_array = np.array(state_list)
+        next_array = np.array(next_list)
+        action_array = np.array(action_list).reshape(-1,1)
+        reward_array = np.array(reward_list).reshape(-1,1)
+        done_array = np.array(done_list).reshape(-1,1)
+
+        return state_array, next_array, action_array, reward_array, done_array
