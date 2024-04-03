@@ -248,10 +248,12 @@ class WarpFrame(gym.ObservationWrapper[np.ndarray, int, np.ndarray]):
         :param frame: environment frame
         :return: the observation
         """
+        # pylint: disable=no-member
         assert cv2 is not None, "OpenCV is not installed, you can do `pip install opencv-python`"
         frame = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
         frame = cv2.resize(frame, (self.width, self.height), interpolation=cv2.INTER_AREA)
         return frame[:, :, None]
+        # pylint: enable=no-member
 
 
 class AtariWrapper(gym.Wrapper[np.ndarray, int, np.ndarray, int]):
