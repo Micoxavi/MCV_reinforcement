@@ -33,11 +33,25 @@ class DQN(nn.Module):
             nb_actions: number of action-value to output. Pong has 6 actions by default.
         """
         super().__init__()
-        self.conv1 = nn.Conv2d(input_shape, 32, kernel_size=8, stride=4)
+        self.conv1 = nn.Conv2d(4, 32, kernel_size=8, stride=4)
         self.conv2 = nn.Conv2d(32, 64, kernel_size=4, stride=2)
         self.conv3 = nn.Conv2d(64, 64, kernel_size=3, stride=1)
-        self.fc4 = nn.Linear(input_shape[1] * input_shape[2] * 64, params['hidden_size'])
+
+
+        self.fc4 = nn.Linear(7 * 7 * 64, params['hidden_size'])
         self.fc5 = nn.Linear(params['hidden_size'], nb_actions)
+        # self.conv = nn.Sequential(nn.Conv2d(input_shape, 32, kernel_size=8, stride=4),
+        #                           nn.ReLU(),
+        #                           nn.Conv2d(32, 64, kernel_size=4, stride=2),
+        #                           nn.ReLU(),
+        #                           nn.Conv2d(64, 64, kernel_size=3, stride=1),
+        #                           nn.ReLU()
+        #                           )
+
+        # self.fc = nn.Sequential(nn.Linear(84 * 84 * 64, params['hidden_size']),
+        #                         nn.ReLU(),
+        #                         nn.Linear(params['hidden_size'], nb_actions)
+        #                         )
 
     def forward(self, x: torch.tensor) -> torch.tensor:
         """
@@ -47,9 +61,13 @@ class DQN(nn.Module):
         :Parameters:
             x: Input image as tensor.
         """
+        x = x / 255.
         x = F.relu(self.conv1(x))
         x = F.relu(self.conv2(x))
         x = F.relu(self.conv3(x))
-        x = F.relu(self.fc4(x.view(x.size(0), -1)))
+        x = F.relu(self.fc4(x.reshape(x.size(0), -1)))
+
 
         return self.fc5(x)
+        # conv_out = self.conv(x).view(x.size()[0], -1)
+        # return self.fc(conv_out)
