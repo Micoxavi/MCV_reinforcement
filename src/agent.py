@@ -36,7 +36,7 @@ class DQNAgent:
         
     """
 
-    def __init__(self, input_shape: int, nb_actions: int, device: str, params: dict) -> None:
+    def __init__(self, input_shape: int, nb_actions: int, device: str, params: dict, env) -> None:
         """
         DQNAgent initialization
 
@@ -49,6 +49,7 @@ class DQNAgent:
         """
         self.device = device
         self.params = params
+        self.env = env
 
         # @train_network -> Used for action selection during the agent's interaction with
         # the enviroment. Its parameters are updated based on the TD-error calculated during
@@ -74,7 +75,7 @@ class DQNAgent:
 
         """
         if np.random.rand() <= self.params['epsilon_start']:
-            action = self.params['env'].action_Space.sample()
+            action = self.env.action_space.sample()
 
         else:
             with torch.no_grad():
@@ -96,19 +97,23 @@ class DQNAgent:
             batch_size: size of the data sampling batch
             discount: reward reduction parameter.         
         """
-
-        state, next_state, action, reward, done = replay_buffer(batch_size)
+        state, next_state, action, reward, done = replay_buffer.sample(batch_size)
 
         state_batch = torch.FloatTensor(state).to(self.device)
         next_state_batch = torch.FloatTensor(next_state).to(self.device)
+
+        # the output tensors have the dimensions permuted so we have to fix it.
+        reshaped_state_batch = state_batch.permute(0, 3, 1, 2)
+        reshaped_next_state_batch = next_state_batch.permute(0, 3, 1, 2)
+
         action_batch = torch.LongTensor(action).to(self.device)
-        reward_batch = torch.FoatTensor(reward).to(self.device)
+        reward_batch = torch.FloatTensor(reward).to(self.device)
         done_batch = torch.FloatTensor(1. - done).to(self.device)
 
         # Get train Q network values for the current state and action.
 
         # pylint: disable=not-callable
-        train_values = self.train_network(state_batch).gather(1, action_batch)
+        train_values = self.train_network(reshaped_state_batch).gather(1, action_batch)
 
         # Get the target Q network values.
         # @(reward_batch + done_batch * discount) --> immediate reward + discount
@@ -117,7 +122,7 @@ class DQNAgent:
         with torch.no_grad():
 
             target_values = reward_batch + done_batch * discount * \
-                             torch.max(self.target_network(next_state_batch).detach(),
+                             torch.max(self.target_network(reshaped_next_state_batch).detach(),
                                        dim=1)[0].view(batch_size, -1)
         # pylint: enable=not-callable
 
@@ -151,5 +156,5 @@ class DQNAgent:
             update_every: number of optimization steps for the target network to be updated
         """
         if nb_iterations % update_every == 0:
-            print("Updating target network parameters")
+            # print("Updating target network parameters")
             self.target_network.load_state_dict(self.train_network.state_dict())
