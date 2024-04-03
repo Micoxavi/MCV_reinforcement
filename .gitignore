@@ -154,6 +154,8 @@ cython_debug/
 
 # Folders
 relevenv/
+wandb/
+weights/
 
 # PyCharm
 #  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
