@@ -53,20 +53,22 @@ def train():
     state = env.reset()
     final_time = time.time()
     total_time = (final_time - start_time) / 3600
+    eps_decay = 0.999985
 
-    epsilon_decay_steps = params['n_timestamps'] * params['exploration_fraction']
-    epsilon_step = (params['epsilon_start'] - params['exploration_final_eps'] /
-                    epsilon_decay_steps)
-    
+    # epsilon_decay_steps = params['n_timestamps'] * params['exploration_fraction']
+    # epsilon_step = (params['epsilon_start'] - params['exploration_final_eps'] /
+    #                 epsilon_decay_steps)
+
     epsilon = params['epsilon_start']
 
     for time_stamp in range(params['n_timestamps']):
-        action = dqn_agent.select_actions(state)
+        action = dqn_agent.select_actions(state, epsilon)
 
         # decay epsilon
-        epsilon -= epsilon_step
-        epsilon = (params['exploration_final_eps'] if epsilon < params['exploration_final_eps']
-                   else epsilon)
+        # epsilon -= epsilon_step
+        # epsilon = (params['exploration_final_eps'] if epsilon < params['exploration_final_eps']
+        #            else epsilon)
+        epsilon = max(epsilon* eps_decay , params['exploration_final_eps'])
 
         # enter action into the env
         next_state, reward, done, _, _ = env.step(action)

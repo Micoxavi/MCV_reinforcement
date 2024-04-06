@@ -64,7 +64,7 @@ class DQNAgent:
 
         self.optimizer = optim.Adam(self.train_network.parameters(), lr=self.params['learning_rate'])
 
-    def select_actions(self, state: any) -> int:
+    def select_actions(self, state: any, epsilon: float) -> int:
         """
         Function used to select actions based on the epsilon-greedy method.
         When the epsilon is bigger than a random number, the action is taken randomly
@@ -72,17 +72,25 @@ class DQNAgent:
 
         :Parameters:
             state: Actual bar position on the image.
+            
+            epsilon: epsilon greedy method.
 
         """
-        if np.random.rand() <= self.params['epsilon_start']:
+        number = np.random.rand()
+        if number < epsilon:
+            # print(number, epsilon)
             action = self.env.action_space.sample()
 
         else:
             with torch.no_grad():
+                if isinstance(state, tuple):
+                    state = state[0]
+
                 input_state = torch.FloatTensor(np.array(state)).unsqueeze(0).to(self.device)
+                reshaped_input_state = input_state.permute(0, 3, 1, 2).to(self.device)
 
                 # pylint: disable=not-callable
-                action = int(self.train_network(input_state).forward().max(1)[1])
+                action = int(self.train_network(reshaped_input_state).max(1)[1])
                 # pylint: enable=not-callable
 
         return action
@@ -103,8 +111,8 @@ class DQNAgent:
         next_state_batch = torch.FloatTensor(next_state).to(self.device)
 
         # the output tensors have the dimensions permuted so we have to fix it.
-        reshaped_state_batch = state_batch.permute(0, 3, 1, 2)
-        reshaped_next_state_batch = next_state_batch.permute(0, 3, 1, 2)
+        reshaped_state_batch = state_batch.permute(0, 3, 1, 2).to(self.device)
+        reshaped_next_state_batch = next_state_batch.permute(0, 3, 1, 2).to(self.device)
 
         action_batch = torch.LongTensor(action).to(self.device)
         reward_batch = torch.FloatTensor(reward).to(self.device)

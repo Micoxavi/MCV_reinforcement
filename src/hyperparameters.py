@@ -42,12 +42,12 @@ def get_hyperparams() -> dict:
         # Parameters given by default on the exercise training introduction
         'batch_size': 32,
         'buffer_size': 100_000,
-        'exploration_final_eps': 0.01, # epsilon min
+        'exploration_final_eps': 0.02, # epsilon min
         'exploration_fraction': 0.1,  
         'frame_stack': 4,  # default on AtariWraper
         'gradient_steps': 1,
         'learning_rate': 0.000_1,
-        'learning_starts': 100_000,
+        'learning_starts': 500_000,
         # 'n_timesteps': 10_000_000.0,
         'n_timestamps': 5_000_000,
         'target_update_interval': 1000,
@@ -59,5 +59,6 @@ def get_hyperparams() -> dict:
         'epsilon_start': 1.0,
         'nb_actions': env.action_space.n,
         'save_weights_every': 1000
+        
     }
     return params, env
